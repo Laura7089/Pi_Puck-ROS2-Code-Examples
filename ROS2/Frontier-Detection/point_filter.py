@@ -1,12 +1,12 @@
-#self.get_logger().info(str(cond))
-#self.get_logger().info('This is z' + str(z) + 'Length of centroids' + str(len(centroids)))
-#self.get_logger().info('This is z' + str(xx))
+# self.get_logger().info(str(cond))
+# self.get_logger().info('This is z' + str(z) + 'Length of centroids' + str(len(centroids)))
+# self.get_logger().info('This is z' + str(xx))
 
 import time
 from array import *
 from copy import copy
 
-#--------Modules and Libraries--------#
+# --------Modules and Libraries--------#
 import rclpy
 from geometry_msgs.msg import Point, PointStamped
 from nav_msgs.msg import OccupancyGrid
@@ -26,7 +26,7 @@ class Filter(Node):
     def __init__(self):
         super().__init__('f')
 
-        #Sub to local map
+        # Sub to local map
         self.map_subscriber = self.create_subscription(
             OccupancyGrid,
             '/epuck0/map',
@@ -39,7 +39,7 @@ class Filter(Node):
             self.filter_callback,
             10,
         )
-        #This is deprecated, use rclpy.get()... to find the time
+        # This is deprecated, use rclpy.get()... to find the time
         self.clock_sub = self.create_subscription(Clock, '/clock',
                                                   self.time_callback, 10)
 
@@ -49,14 +49,14 @@ class Filter(Node):
 
         self.f_pub = self.create_publisher(Marker, '/frontiers', 10)
         self.c_pub = self.create_publisher(Marker, '/centroid', 10)
-        #self.publish_goal_values = self.create_publisher(PointStamped, '/goal', 10)
+        # self.publish_goal_values = self.create_publisher(PointStamped, '/goal', 10)
         self.filter_pub = self.create_publisher(PointArray, param_goal.value,
                                                 10)
 
         self.goals = PointStamped()
         self.mapData = OccupancyGrid()
         self.time = Clock()
-        #self.pointArray = PointArray()
+        # self.pointArray = PointArray()
 
         self.goal_coordinates = []
         self.frontiers = []
@@ -66,8 +66,9 @@ class Filter(Node):
 
     def map_callback(self, msg):
         self.mapData = msg
-        #for i in range(len(msg.data)):
-        #self.get_logger().info(str(i) + ' ' + 'Map data: ' + str(msg.data[i]))
+
+    # for i in range(len(msg.data)):
+    # self.get_logger().info(str(i) + ' ' + 'Map data: ' + str(msg.data[i]))
 
     def time_callback(self, msg):
         self.time = msg.clock
@@ -78,9 +79,9 @@ class Filter(Node):
         euclidean distance to the actual robot.
         This will also get rids of redendant points other time as well
         '''
-        #self.get_logger().info(str(self.mapData))
+        # self.get_logger().info(str(self.mapData))
 
-        #Wait until a map is called
+        # Wait until a map is called
         if self.mapData.header.frame_id == '':
             return
 
@@ -94,8 +95,8 @@ class Filter(Node):
 
         pointArray = PointArray()
 
-        #transformedPoint = args[0].transformPoint(args[1], data) = tf_liserner.transformPoint(Map header, data)
-        #Assign frontiers from point data
+        # transformedPoint = args[0].transformPoint(args[1], data) = tf_liserner.transformPoint(Map header, data)
+        # Assign frontiers from point data
         x = [array([msg.point.x, msg.point.y])]
         if len(self.frontiers) > 0:
             self.frontiers = vstack((self.frontiers, x))
@@ -105,40 +106,40 @@ class Filter(Node):
         centroids = []
         front = copy(self.frontiers)
 
-        #self.get_logger().info(str(len(front)))
+        # self.get_logger().info(str(len(front)))
 
         centroids = front
-        #self.get_logger().info(str(x))
-        #Is clustering needed
+        # self.get_logger().info(str(x))
+        # Is clustering needed
 
-        #Unsupervised clustering technique, hierarchical clustering, figures out where and how many there are
-        #This shrinks all the points about 62 to 6/7
-        #https://pythonprogramming.net/hierarchical-clustering-mean-shift-machine-learning-tutorial/
+        # Unsupervised clustering technique, hierarchical clustering, figures out where and how many there are
+        # This shrinks all the points about 62 to 6/7
+        # https://pythonprogramming.net/hierarchical-clustering-mean-shift-machine-learning-tutorial/
         if len(front) == 1:
             centroids = front
         elif len(front) > 1:
-            #Radius(bandwidth) applied to every datapointry
-            #This works
+            # Radius(bandwidth) applied to every datapointry
+            # This works
             ms = MeanShift(bandwidth=0.3)
             ms.fit(front)
-            centroids = ms.cluster_centers_  # centroids array is the centers of each cluster
+            centroids = ms.cluster_centers_  #  centroids array is the centers of each cluster
 
         self.frontiers = centroids
 
-        #self.get_logger().info(str(len(centroids)))
-        #--------------------------------------------------------------------------#
-        #Clear old frontiers
-        #Check if goal is in a occupied zone
-        #Check tf tree, there is a mistake
+        # self.get_logger().info(str(len(centroids)))
+        # --------------------------------------------------------------------------#
+        # Clear old frontiers
+        # Check if goal is in a occupied zone
+        # Check tf tree, there is a mistake
         z = 0
         while z < len(centroids):
             cond = False
             tempStampedPoint.point.x = centroids[z][0]
             tempStampedPoint.point.y = centroids[z][1]
 
-            # x = transfromed points
+            #  x = transfromed points
             xx = array([tempStampedPoint.point.x, tempStampedPoint.point.y])
-            #Values get here
+            # Values get here
             cond = (gridValue(self.mapData, xx) > self.threshold) or cond
             if (cond or (informationGain(self.mapData,
                                          [centroids[z][0], centroids[z][1]],
@@ -149,8 +150,8 @@ class Filter(Node):
             z += 1
 
 
-#--------------------------------------------------------------------------#
-#publish points
+# --------------------------------------------------------------------------#
+# publish points
         pointArray.points = []
         num = 0
         for i in centroids:
@@ -158,8 +159,9 @@ class Filter(Node):
             tempPoint.y = i[1]
             num = num + 1
             pointArray.points.append(copy(tempPoint))
-            #self.get_logger().info('Point: ' + str(tempPoint))
-        #self.get_logger().info('How many points: '+ str(num))
+        # self.get_logger().info('Point: ' + str(tempPoint))
+
+    # self.get_logger().info('How many points: '+ str(num))
         self.filter_pub.publish(pointArray)
 
 
@@ -168,9 +170,9 @@ def main(args=None):
     f = Filter()
     rclpy.spin(f)
 
-    # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
+    #  Destroy the node explicitly
+    #  (optional - otherwise it will be done automatically
+    #  when the garbage collector destroys the node object)
     f.destroy_node()
     rclpy.shutdown()
 

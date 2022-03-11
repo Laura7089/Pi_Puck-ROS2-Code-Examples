@@ -1,18 +1,18 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 
-# Copyright 1996-2021 Cyberbotics Ltd.
+#  Copyright 1996-2021 Cyberbotics Ltd.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#      http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
 """Launch Webots and ROS2 driver."""
 
 import os
@@ -95,15 +95,15 @@ def generate_launch_description():
     node_name = LaunchConfiguration('node_name')
     use_sim_time = LaunchConfiguration('use_sim_time')
 
-    # Webots
+    #  Webots
     webots = WebotsLauncher(world=world, mode=mode, gui=gui)
-    # Control how many robots you want
+    #  Control how many robots you want
     num = 2
     controller = []
     robot_state_publisher = []
 
     for i in range(num):
-        # Driver node
+        #  Driver node
         name = 'epuck' + str(i)
         controller.append(
             ControllerLauncher(
@@ -116,8 +116,8 @@ def generate_launch_description():
                     {
                         'synchronization': synchronization,
                         'use_joint_state_publisher': publish_tf,
-                        #'use_sim_time': use_sim_time
-                        #I added use sim time paramters here
+                        # 'use_sim_time': use_sim_time
+                        # I added use sim time paramters here
                     }
                 ],
                 output='screen',
@@ -127,7 +127,7 @@ def generate_launch_description():
                 ],
             ))
 
-        # Robot state publisher
+        #  Robot state publisher
         robot_state_publisher.append(
             Node(package='robot_state_publisher',
                  executable='robot_state_publisher',
@@ -143,23 +143,23 @@ def generate_launch_description():
     return LaunchDescription(ARGUMENTS + [
         robot_state_publisher[0],
         robot_state_publisher[1],
-        #robot_state_publisher[2],
-        #robot_state_publisher[3],
-        #robot_state_publisher[4],
-        #robot_state_publisher[5],
-        #robot_state_publisher[6],
-        #robot_state_publisher[7],
+        # robot_state_publisher[2],
+        # robot_state_publisher[3],
+        # robot_state_publisher[4],
+        # robot_state_publisher[5],
+        # robot_state_publisher[6],
+        # robot_state_publisher[7],
         webots,
         controller[0],
         controller[1],
-        #controller[2],
-        #controller[3],
-        #controller[4],
-        #controller[5],
-        #controller[6],
-        #controller[7],
+        # controller[2],
+        # controller[3],
+        # controller[4],
+        # controller[5],
+        # controller[6],
+        # controller[7],
 
-        # Shutdown launch when Webots exits.
+        #  Shutdown launch when Webots exits.
         RegisterEventHandler(event_handler=launch.event_handlers.OnProcessExit(
             target_action=webots,
             on_exit=[EmitEvent(event=launch.events.Shutdown())],

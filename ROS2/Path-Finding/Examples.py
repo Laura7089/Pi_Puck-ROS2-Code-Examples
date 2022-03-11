@@ -1,32 +1,32 @@
-# Author: Lucas Williamson
-# Date: April 11th 2021
-# ROS Version: ROS 2 Foxy Fitzroy
+#   Author: Lucas Williamson
+#   Date: April 11th 2021
+#   ROS Version: ROS 2 Foxy Fitzroy
 """
 Any variable named with "self" should be defined in a class
 """
 
-#Some imports you might need
-#Regular expression module
+#  Some imports you might need
+#  Regular expression module
 import re
 from functools import partial
 
-#--------------------------------------------------------------------------#
-# Imported libraries
+#  --------------------------------------------------------------------------#
+#   Imported libraries
 import numpy as np
-#--------------------------------------------------------------------------#
-# ROS2 client library for Python
+#  --------------------------------------------------------------------------#
+#   ROS2 client library for Python
 import rclpy
 from geometry_msgs.msg import Point, PointStamped, Pose, Twist
 from nav_msgs.msg import MapMetaData, OccupancyGrid, Odometry
 from rclpy.node import Node
 from rclpy.qos import qos_profile_action_status_default
 from sensor_msgs.msg import LaserScan
-#--------------------------------------------------------------------------#
-#Ros message types
+#  --------------------------------------------------------------------------#
+#  Ros message types
 from std_msgs.msg import Float64MultiArray, String
 
 
-#--------------------------------------------------------------------------#
+#  --------------------------------------------------------------------------#
 def pose_received(self, msg):
     """
     Example of getting goal poses from frontier detection algorithm
@@ -34,14 +34,14 @@ def pose_received(self, msg):
     pose_arr = msg
     goal = Point()
     dist = 0
-    #arbitary big number
+    #  arbitary big number
     curr_dist = 100
 
-    #Picks goal based on euclidean distance
+    #  Picks goal based on euclidean distance
     for i in range(len(pose_arr.points)):
         dist_x = pose_arr.points[i].x
         dist_y = pose_arr.points[i].y
-        #Math.pow is preferred over ** since it enforces float property though it is slower than **
+        #  Math.pow is preferred over ** since it enforces float property though it is slower than **
         new_dist = math.sqrt(
             math.pow((self.current_x - dist_x), 2) +
             math.pow((self.current_y - dist_y), 2))
@@ -49,10 +49,10 @@ def pose_received(self, msg):
         if new_dist < curr_dist and new_dist > 0.2:
             goal = pose_arr.points[i]
         curr_dist = new_dist
-        #Implement transform look up in tf-tree
+#  Implement transform look up in tf-tree
 
     if self.new_goal:
-        #Need to implement a lock so goal doesn't change until it's reached the current goal
+        #  Need to implement a lock so goal doesn't change until it's reached the current goal
         self.new_goal = False
         self.goal_x_coordinates = [goal.x]
         self.goal_y_coordinates = [goal.y]
@@ -62,39 +62,41 @@ def pose_received(self, msg):
                                str(self.goal_y_coordinates))
 
 
-#This goal would then be used by the bug2 algorithm
-#Since we havce a list of goals could also implement any local path finding algorithm as long as it isn't too expensive
-#e.g. https://ros-developer.com/2018/04/16/breadth-first-search-bfs-and-depth-first-search-dsf-algorithm-in-python/
-#--------------------------------------------------------------------------#
+#  This goal would then be used by the bug2 algorithm
+#  Since we havce a list of goals could also implement any local path finding algorithm as long as it isn't too expensive
+#  e.g. https://ros-developer.com/2018/04/16/breadth-first-search-bfs-and-depth-first-search-dsf-algorithm-in-python/
+#  --------------------------------------------------------------------------#
 
 
 def laser_callback(self, msg):
-    #These correspond to the Webots Driver
-    #Ranges [0] to [20] represent -150 to 150 in 15 degree increments
-    #As you can imagine 0 represents the forwards direction [10]
-    # -135 and 135 are the front left and right [1] and [19]
-    # -90 and 90 are the sides [4] and [16]
-    #-45 and 45 are the backwards directions [7] and [13] These aren't particully needed for wall following but will still be helpful
-    # small ones are the short range sensors and only in forwards direction
-    self.leftback_dist = msg.ranges[19]  #45 back
-    self.left_dist = msg.ranges[16]  #90
-    self.leftfront_dist = msg.ranges[13]  #45 front
-    self.leftfrontsmall_dist = msg.ranges[11]  #small dist
+    #  These correspond to the Webots Driver
+    #  Ranges [0] to [20] represent -150 to 150 in 15 degree increments
+    #  As you can imagine 0 represents the forwards direction [10]
+    #   -135 and 135 are the front left and right [1] and [19]
+    #   -90 and 90 are the sides [4] and [16]
+    #  -45 and 45 are the backwards directions [7] and [13] These aren't particully needed for wall following but will still be helpful
+    #   small ones are the short range sensors and only in forwards direction
+    self.leftback_dist = msg.ranges[19]  #  45 back
+    self.left_dist = msg.ranges[16]  #  90
+    self.leftfront_dist = msg.ranges[13]  #  45 front
+    self.leftfrontsmall_dist = msg.ranges[11]  #  small dist
     self.front_dist = msg.ranges[10]
-    self.rightfrontsmall_dist = msg.ranges[9]  #Small dist
-    self.rightfront_dist = msg.ranges[7]  #45 front
-    self.right_dist = msg.ranges[4]  #90
-    self.rightback_dist = msg.ranges[1]  #45 back
-    #Call a movement method
+    self.rightfrontsmall_dist = msg.ranges[9]  #  Small dist
+    self.rightfront_dist = msg.ranges[7]  #  45 front
+    self.right_dist = msg.ranges[4]  #  90
+    self.rightback_dist = msg.ranges[1]  #  45 back
 
 
-#--------------------------------------------------------------------------#
+#  Call a movement method
+
+
+#  --------------------------------------------------------------------------#
 def wall_bounce_random(self):
     """
         Wander around a enviroment and randomly bounce off obstacles.
         """
-    # Create a Twist message and initialize all the values
-    # for the linear and angular velocities
+    #   Create a Twist message and initialize all the values
+    #   for the linear and angular velocities
     msg = Twist()
     msg.linear.x = 0.0
     msg.linear.y = 0.0
@@ -107,14 +109,14 @@ def wall_bounce_random(self):
         """
     dist = self.dist_thresh_bounce
     small_dist = 0.06
-    #maybe set up cases like a switch cases but store them for use earlier
-    # e.g. case[0] is set when first if statement is acheived for example
-    #Might look better
+    #  maybe set up cases like a switch cases but store them for use earlier
+    #   e.g. case[0] is set when first if statement is acheived for example
+    #  Might look better
 
     if self.front_dist > dist:
         if (self.left_dist < small_dist or self.right_dist < small_dist):
             random_angle = random.randint(0, 6)
-            # Side on collision
+            #   Side on collision
             timer = time.time() + random_angle
             while time.time() < timer:
                 msg.angular.z = self.turning_speed
@@ -123,18 +125,18 @@ def wall_bounce_random(self):
         elif (self.leftfront_dist < small_dist
               or self.rightfront_dist < small_dist):
             random_angle = random.randint(0, 8)
-            # Side on collision
+            #   Side on collision
             timer = time.time() + random_angle
             while time.time() < timer:
                 msg.angular.z = self.turning_speed
                 self.vel_publisher.publish(msg)
             msg.angular.z = 0.0
         else:
-            msg.linear.x = self.forward_speed  # Go straight forward
+            msg.linear.x = self.forward_speed  #   Go straight forward
             if (self.leftfrontsmall_dist < 0.035
                     or self.rightfrontsmall_dist < 0.035):
                 random_angle = random.randint(0, 12)
-                # Head on collision
+                #   Head on collision
                 timer = time.time() + random_angle
                 while time.time() < timer:
                     msg.angular.z = self.turning_speed * 2
@@ -142,7 +144,7 @@ def wall_bounce_random(self):
                 msg.angular.z = 0.0
     elif self.front_dist < dist:
         random_angle = random.randint(0, 12)
-        # Head on collision
+        #   Head on collision
         timer = time.time() + random_angle
         while time.time() < timer:
             msg.angular.z = self.turning_speed * 2
@@ -154,10 +156,10 @@ def wall_bounce_random(self):
     self.vel_publisher.publish(msg)
 
 
-#--------------------------------------------------------------------------#
+#  --------------------------------------------------------------------------#
 def obstacle_avoidance(self):
-    # Create a Twist message and initialize all the values
-    # for the linear and angular velocities
+    #   Create a Twist message and initialize all the values
+    #   for the linear and angular velocities
     msg = Twist()
     msg.linear.x = 0.0
     msg.linear.y = 0.0
@@ -169,68 +171,68 @@ def obstacle_avoidance(self):
     dist = self.dist_thresh_obs
     dist_long = self.enclosed_dist_thresh_obs
 
-    #Random derivation
+    #  Random derivation
     if self.leftfront_dist > dist and self.front_dist > dist and self.rightfront_dist > dist:
-        #front region is empty go straight
+        #  front region is empty go straight
         num = random.randint(0, 100)
         self.get_logger().info(str(num) + "\n")
         if (num < 2):
-            # Head on collision
+            #   Head on collision
             timer = time.time() + 5
             while time.time() < timer:
-                msg.angular.z = -self.turning_speed  #turn right
+                msg.angular.z = -self.turning_speed  #  turn right
                 self.vel_publisher.publish(msg)
             msg.angular.z = 0.0
         elif (num < 4):
-            # Head on collision
+            #   Head on collision
             timer = time.time() + 5
             while time.time() < timer:
-                msg.angular.z = self.turning_speed  #turn left
+                msg.angular.z = self.turning_speed  #  turn left
                 self.vel_publisher.publish(msg)
             msg.angular.z = 0.0
         else:
-            msg.linear.x = self.forward_speed  # Go straight forward
+            msg.linear.x = self.forward_speed  #   Go straight forward
 
     elif self.leftfront_dist > dist and self.front_dist < dist and self.rightfront_dist > dist or self.leftfront_dist < dist_long and self.front_dist < dist and self.rightfront_dist < dist_long:
-        msg.angular.z = -self.turning_speed  # Turn left
+        msg.angular.z = -self.turning_speed  #   Turn left
     elif self.leftfront_dist > dist and self.front_dist > dist and self.rightfront_dist < dist:
-        #Left and front regions are free but right is taken turn left
+        #  Left and front regions are free but right is taken turn left
         msg.angular.z = -self.turning_speed
     elif self.leftfront_dist < dist and self.front_dist > dist and self.rightfront_dist > dist:
-        #right and front regions are free but left is taken turn right
-        msg.angular.z = -self.turning_speed  # Turn right
+        #  right and front regions are free but left is taken turn right
+        msg.angular.z = -self.turning_speed  #   Turn right
     elif self.leftfront_dist > dist and self.front_dist < dist and self.rightfront_dist < dist:
-        #Left and is free turn left
+        #  Left and is free turn left
         msg.angular.z = -self.turning_speed
     elif self.leftfront_dist < dist and self.front_dist < dist and self.rightfront_dist > dist:
-        #right and is free turn right
+        #  right and is free turn right
         msg.angular.z = -self.turning_speed
     elif self.leftfront_dist < dist and self.front_dist < dist and self.rightfront_dist < dist:
-        #No where is free turn right
+        #  No where is free turn right
         msg.angular.z = -self.turning_speed
     elif self.leftfront_dist < dist and self.front_dist > dist and self.rightfront_dist < dist:
-        #Only front is free
+        #  Only front is free
         if self.leftfrontsmall_dist < 0.3 and self.rightfrontsmall_dist < 0.3:
-            #There is a small obstacle in the way turn left
+            #  There is a small obstacle in the way turn left
             msg.angular.z = self.turning_speed
         else:
             msg.linear.x = self.forward_speed
     else:
         pass
 
-    # Send the velocity commands to the robot by publishing
-    # to the topic
+#   Send the velocity commands to the robot by publishing
+#   to the topic
     self.vel_publisher.publish(msg)
 
 
-#--------------------------------------------------------------------------#
+#  --------------------------------------------------------------------------#
 def spin(self, msg):
     """
         Spin 360 degrees to gain more information for map merging
         """
-    #This uses an Odometry reading, if too inaccurate use a time based method instead
+    #  This uses an Odometry reading, if too inaccurate use a time based method instead
     curr_yaw = math.ceil(self.current_yaw * (180 / math.pi))
-    #This is 360 degrees
+    #  This is 360 degrees
     target_yaw = 0
 
     if curr_yaw != target_yaw or self.start_spin:
@@ -250,4 +252,4 @@ def spin(self, msg):
         self.go_to_goal_state = "adjust heading"
 
 
-#--------------------------------------------------------------------------#
+#  --------------------------------------------------------------------------#

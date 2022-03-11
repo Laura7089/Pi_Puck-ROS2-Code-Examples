@@ -1,39 +1,38 @@
-# Author: Lucas Williamson
-# Date: April 11th 2021
-# ROS Version: ROS 2 Foxy Fitzroy
+#  Author: Lucas Williamson
+#  Date: April 11th 2021
+#  ROS Version: ROS 2 Foxy Fitzroy
 
-# import the math module
-############## IMPORT LIBRARIES #################
-# Python math library
+#  import the math module
+# # # # # # # # # # # # # #  IMPORT LIBRARIES# # # # # # # # # # # # # # # # #
+#  Python math library
 import math
 import re
-# Python time library
+#  Python time library
 import time
 from functools import partial
-# Enables pauses in the execution of code
+#  Enables pauses in the execution of code
 from time import sleep
 
-# Scientific computing library
+#  Scientific computing library
 import numpy as np
-# ROS client library for Python
+#  ROS client library for Python
 import rclpy
-# Handle Pose messages
-# Twist is linear and angular velocity
+#  Handle Pose messages
+#  Twist is linear and angular velocity
 from geometry_msgs.msg import Pose, Twist
-#Handle map info
+# Handle map info
 from nav_msgs.msg import MapMetaData, OccupancyGrid, Odometry
-# Used to create nodes
+#  Used to create nodes
 from rclpy.node import Node
-# Handles quality of service for LaserScan data
+#  Handles quality of service for LaserScan data
 from rclpy.qos import qos_profile_action_status_default
-# Handles LaserScan messages to sense distance to obstacles (i.e. walls)
+#  Handles LaserScan messages to sense distance to obstacles (i.e. walls)
 from sensor_msgs.msg import LaserScan
-# Handle float64 arrays
-# Enables the use of the string message type
+#  Handle float64 arrays
+#  Enables the use of the string message type
 from std_msgs.msg import Float64MultiArray, String
 
-#from nav_msgs.msg import Odometry
-
+# from nav_msgs.msg import Odometry
 
 
 class MapExplore(Node):
@@ -48,20 +47,20 @@ class MapExplore(Node):
         self.num_robots = 5
         self.number = 0
 
-        #Add a param to automate file creation for new iterations
-        #This method is based on using a ground truth through the /map topic
+        # Add a param to automate file creation for new iterations
+        # This method is based on using a ground truth through the /map topic
 
         self.odom_file = open("odom_data.txt", "w+")
         self.map_completion_file = open("map_completion_data.txt", "w+")
-        #self.map_efficiency_file = open("map_efficency_data.txt", "w+")
-        #self.map_quality_file = open("map_quality_data.txt", "w+")
+        # self.map_efficiency_file = open("map_efficency_data.txt", "w+")
+        # self.map_quality_file = open("map_quality_data.txt", "w+")
 
-        #To compare with
+        # To compare with
         self.truth_map = OccupancyGrid()
         self.truth_map_filled_num = 0
         self.truth_map_free_num = 0
 
-        #Checks 5 pixels either side of it for a match
+        # Checks 5 pixels either side of it for a match
         self.error_margin = 5
 
         self.map_subscriber = self.create_subscription(
@@ -77,7 +76,7 @@ class MapExplore(Node):
             10,
         )
 
-        #This is for indivisual robot stats
+        # This is for indivisual robot stats
         for number in range(self.num_robots):
             self.number = number
             odom_name = name + str(number) + '/odom'
@@ -132,13 +131,14 @@ class MapExplore(Node):
                     matches = matches + 1
             else:
                 other += 1
-        #ratio lets make it a percentage
+
+    # ratio lets make it a percentage
         map_completion = (
             (num_instances_of_zeros + num_instances_of_positives) /
             (self.truth_map_filled_num + self.truth_map_free_num)) * 100
         self.map_completion_file.write(str(map_completion) + " ")
 
-        #ratio lets make it a percentage
+        # ratio lets make it a percentage
         map_quality = matches / (self.truth_map_filled_num +
                                  self.truth_map_free_num) * 100
         self.map_quality_file.write(str(map_quality) + " ")
@@ -169,7 +169,7 @@ class MapExplore(Node):
 
     def odom_callback(self, name, msg):
         number = [int(s) for s in re.findall(r'-?\d+\.?\d*', name)]
-        #self.get_logger().info(str(number) + name)
+        # self.get_logger().info(str(number) + name)
         if (self.first_run[number[0]]):
             self.previous_x[number[0]] = msg.pose.pose.position.x
             self.previous_y[number[0]] = msg.pose.pose.position.y
@@ -183,18 +183,19 @@ class MapExplore(Node):
                                 (y - self.previous_y[number[0]]))
 
         self.total_distance = self.total_distance + d_increment
-        #self.pub.publish(data)
+        # self.pub.publish(data)
         self.previous_x[number[0]] = msg.pose.pose.position.x
         self.previous_y[number[0]] = msg.pose.pose.position.y
         self.first_run[number[0]] = False
 
-        #self.get_logger().info("Total distance traveled is {:.2f} m".format(self.total_distance))
+        # self.get_logger().info("Total distance traveled is {:.2f} m".format(self.total_distance))
 
         self.total_distance = self.total_distance + d_increment
         self.odom_file.write(str(self.total_distance) + " ")
-        #self.get_logger().info("before: " + str(x) + " " + str(self.get_topic_name()))
-        #self.get_logger().info("\n After: " + str(self.previous_x[number[0]]) + " " + str(self.previous_y[number[0]]))
-        #self.get_logger().info("\n Maths: " + str( x - self.previous_x))
+
+    # self.get_logger().info("before: " + str(x) + " " + str(self.get_topic_name()))
+    # self.get_logger().info("\n After: " + str(self.previous_x[number[0]]) + " " + str(self.previous_y[number[0]]))
+    # self.get_logger().info("\n Maths: " + str( x - self.previous_x))
 
 
 def main(args=None):

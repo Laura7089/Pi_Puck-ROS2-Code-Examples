@@ -1,16 +1,16 @@
-# Copyright 1996-2021 Cyberbotics Ltd.
+#  Copyright 1996-2021 Cyberbotics Ltd.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#      http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
 """ROS2 e-puck driver."""
 
 from math import pi
@@ -22,7 +22,7 @@ from sensor_msgs.msg import LaserScan
 from tf2_ros import StaticTransformBroadcaster
 from webots_ros2_core.math.interpolation import interpolate_lookup_table
 from webots_ros2_core.webots_differential_drive_node import \
-rWebotsDifferentialDriveNode
+rrWebotsDifferentialDriveNode
 
 OUT_OF_RANGE = 0.0
 INFRARED_MAX_RANGE = 0.04
@@ -37,23 +37,23 @@ NB_INFRARED_SENSORS = 8
 SENSOR_DIST_FROM_CENTER = 0.035
 
 DISTANCE_SENSOR_ANGLE = [
-    -15 * pi / 180,  # ps0
-    -45 * pi / 180,  # ps1
-    -90 * pi / 180,  # ps2
-    -150 * pi / 180,  # ps3
-    150 * pi / 180,  # ps4
-    90 * pi / 180,  # ps5
-    45 * pi / 180,  # ps6
-    15 * pi / 180,  # ps7
+    -15 * pi / 180,  #  ps0
+    -45 * pi / 180,  #  ps1
+    -90 * pi / 180,  #  ps2
+    -150 * pi / 180,  #  ps3
+    150 * pi / 180,  #  ps4
+    90 * pi / 180,  #  ps5
+    45 * pi / 180,  #  ps6
+    15 * pi / 180,  #  ps7
 ]
 
 TOF_LIDAR_SENSOR_ANGLE = [
-    90 * pi / 180,  # tof0 absolute angle 0
-    135 * pi / 180,  # tof1 absolute angle 45
-    -135 * pi / 180,  # tof2 absolute angle 135
-    -90 * pi / 180,  # tof3 absolute angle 180
-    -45 * pi / 180,  # tof4 absolute angle 225
-    45 * pi / 180,  # tof5 absolute angle 315
+    90 * pi / 180,  #  tof0 absolute angle 0
+    135 * pi / 180,  #  tof1 absolute angle 45
+    -135 * pi / 180,  #  tof2 absolute angle 135
+    -90 * pi / 180,  #  tof3 absolute angle 180
+    -45 * pi / 180,  #  tof4 absolute angle 225
+    45 * pi / 180,  #  tof5 absolute angle 315
 ]
 
 DEVICE_CONFIG = {
@@ -120,21 +120,21 @@ class EPuckDriver(WebotsDifferentialDriveNode):
                          wheel_radius=DEFAULT_WHEEL_RADIUS)
         self.start_device_manager(DEVICE_CONFIG)
 
-        #get the namespace for the robots
+        # get the namespace for the robots
         namespace = rclpy.node.Node.get_namespace(self)
-        #self.get_logger().info('Namespace of robot X  = "%s"' % namespace)
+        # self.get_logger().info('Namespace of robot X  = "%s"' % namespace)
 
-        # Intialize distance sensors for LaserScan topic
+        #  Intialize distance sensors for LaserScan topic
         self.distance_sensors = {}
         for i in range(NB_INFRARED_SENSORS):
             sensor = self.robot.getDistanceSensor('ps{}'.format(i))
             sensor.enable(self.timestep)
             self.distance_sensors['ps{}'.format(i)] = sensor
 
-        # Create Lidar subscriber
-        #self.lidar_sensor = self.robot.getLidar('lidar_sensor')
-        #self.lidar_sensor.enable(self.service_node_vel_timestep)
-        #self.laser_publisher = self.create_publisher(LaserScan, '/scan', 1)
+    #  Create Lidar subscriber
+    # self.lidar_sensor = self.robot.getLidar('lidar_sensor')
+    # self.lidar_sensor.enable(self.service_node_vel_timestep)
+    # self.laser_publisher = self.create_publisher(LaserScan, '/scan', 1)
 
         self.tof_sensors = {}
         for i in range(TOF_SENSORS):
@@ -152,20 +152,20 @@ class EPuckDriver(WebotsDifferentialDriveNode):
             self.get_logger().info(
                 'ToF sensor is not present for this e-puck version')
 
-        # Main loop
+    #  Main loop
         self.create_timer(self.timestep / 1000, self.__publish_laserscan_data)
 
-    #def null_values(num):
-    #nulls = []
-    #for i in range(num):
-    #nulls [i] = OUT_OF_RANGE
-    #return nulls
+# def null_values(num):
+# nulls = []
+# for i in range(num):
+# nulls [i] = OUT_OF_RANGE
+# return nulls
 
     def __publish_laserscan_data(self):
 
-        #get the namespace for the robots
+        # get the namespace for the robots
         namespace = rclpy.node.Node.get_namespace(self)
-        #self.get_logger().info('Namespace of robot X  = "%s"' % namespace)
+        # self.get_logger().info('Namespace of robot X  = "%s"' % namespace)
         tf = namespace + "/"
 
         stamp = Time(seconds=self.robot.getTime()).to_msg()
@@ -176,44 +176,44 @@ class EPuckDriver(WebotsDifferentialDriveNode):
 
         test_tofs = [OUT_OF_RANGE] * 13
 
-        # Calculate distances
+        #  Calculate distances
         for i, key in enumerate(self.distance_sensors):
             dists[i] = interpolate_lookup_table(
                 self.distance_sensors[key].getValue(),
                 self.distance_sensors[key].getLookupTable())
 
-        # Publish range: ToF
+    #  Publish range: ToF
         if self.tof_sensor:
             dist_tof = interpolate_lookup_table(
                 self.tof_sensor.getValue(), self.tof_sensor.getLookupTable())
 
-        # Max range of ToF sensor is 1.35m so we put it as maximum laser range.
-        # Therefore, for all invalid ranges we put 0 so it get deleted by rviz
+    #  Max range of ToF sensor is 1.35m so we put it as maximum laser range.
+    #  Therefore, for all invalid ranges we put 0 so it get deleted by rviz
         laser_dists = [
             OUT_OF_RANGE if dist > INFRARED_MAX_RANGE else dist
             for dist in dists
         ]
-        #tof_dists = [OUT_OF_RANGE if dist > TOF_SHORT_MODE_MAX_RANGE else dist for dist in dist_tofs]
+        # tof_dists = [OUT_OF_RANGE if dist > TOF_SHORT_MODE_MAX_RANGE else dist for dist in dist_tofs]
 
-        #  msg_lidar.ranges = self.lidar_sensor.getRangeImage()
+        #   msg_lidar.ranges = self.lidar_sensor.getRangeImage()
 
-        #Create data array for ranges
+        # Create data array for ranges
         data = [OUT_OF_RANGE
-                ] * 1501  # An array with 1501 datapoints defaulting to 0
+                ] * 1501  #  An array with 1501 datapoints defaulting to 0
 
-        #It was quickest to manually set the data
-        #You should automate this process
+        # It was quickest to manually set the data
+        # You should automate this process
 
-        #Lasers
+        # Lasers
         data[0] = laser_dists[3] + SENSOR_DIST_FROM_CENTER
         data[1500] = laser_dists[4] + SENSOR_DIST_FROM_CENTER
         data[675] = laser_dists[0] + SENSOR_DIST_FROM_CENTER
         data[825] = laser_dists[7] + SENSOR_DIST_FROM_CENTER
         data[750] = dist_tof + SENSOR_DIST_FROM_CENTER
-        #The gap is 2.0 so we have a little bit of error between
-        #Tof0
+        # The gap is 2.0 so we have a little bit of error between
+        # Tof0
         data[1150] = self.tof_sensors['tof0'].getRangeImage(
-        )[0] + SENSOR_DIST_FROM_CENTER  #80
+        )[0] + SENSOR_DIST_FROM_CENTER  # 80
         data[1158] = self.tof_sensors['tof0'].getRangeImage(
         )[1] + SENSOR_DIST_FROM_CENTER
         data[1166] = self.tof_sensors['tof0'].getRangeImage(
@@ -237,10 +237,10 @@ class EPuckDriver(WebotsDifferentialDriveNode):
         data[1238] = self.tof_sensors['tof0'].getRangeImage(
         )[11] + SENSOR_DIST_FROM_CENTER
         data[1250] = self.tof_sensors['tof0'].getRangeImage(
-        )[12] + SENSOR_DIST_FROM_CENTER  #100 slight error propagated 0.2 too off
-        #Tof1
+        )[12] + SENSOR_DIST_FROM_CENTER  # 100 slight error propagated 0.2 too off
+        # Tof1
         data[1375] = self.tof_sensors['tof1'].getRangeImage(
-        )[0] + SENSOR_DIST_FROM_CENTER  #125
+        )[0] + SENSOR_DIST_FROM_CENTER  # 125
         data[1383] = self.tof_sensors['tof1'].getRangeImage(
         )[1] + SENSOR_DIST_FROM_CENTER
         data[1391] = self.tof_sensors['tof1'].getRangeImage(
@@ -264,11 +264,11 @@ class EPuckDriver(WebotsDifferentialDriveNode):
         data[1463] = self.tof_sensors['tof1'].getRangeImage(
         )[11] + SENSOR_DIST_FROM_CENTER
         data[1475] = self.tof_sensors['tof1'].getRangeImage(
-        )[12] + SENSOR_DIST_FROM_CENTER  #145 slight error propagated 0.2 too off
+        )[12] + SENSOR_DIST_FROM_CENTER  # 145 slight error propagated 0.2 too off
 
-        #Tof2
+        # Tof2
         data[25] = self.tof_sensors['tof2'].getRangeImage(
-        )[0] + SENSOR_DIST_FROM_CENTER  #-145
+        )[0] + SENSOR_DIST_FROM_CENTER  # -145
         data[33] = self.tof_sensors['tof2'].getRangeImage(
         )[1] + SENSOR_DIST_FROM_CENTER
         data[41] = self.tof_sensors['tof2'].getRangeImage(
@@ -292,11 +292,11 @@ class EPuckDriver(WebotsDifferentialDriveNode):
         data[113] = self.tof_sensors['tof2'].getRangeImage(
         )[11] + SENSOR_DIST_FROM_CENTER
         data[125] = self.tof_sensors['tof2'].getRangeImage(
-        )[12] + SENSOR_DIST_FROM_CENTER  #-125 slight error propagated 0.8 degreetoo off
+        )[12] + SENSOR_DIST_FROM_CENTER  # -125 slight error propagated 0.8 degreetoo off
 
-        #Tof3
+        # Tof3
         data[250] = self.tof_sensors['tof3'].getRangeImage(
-        )[0] + SENSOR_DIST_FROM_CENTER  #-100
+        )[0] + SENSOR_DIST_FROM_CENTER  # -100
         data[258] = self.tof_sensors['tof3'].getRangeImage(
         )[1] + SENSOR_DIST_FROM_CENTER
         data[266] = self.tof_sensors['tof3'].getRangeImage(
@@ -320,11 +320,11 @@ class EPuckDriver(WebotsDifferentialDriveNode):
         data[338] = self.tof_sensors['tof3'].getRangeImage(
         )[11] + SENSOR_DIST_FROM_CENTER
         data[350] = self.tof_sensors['tof3'].getRangeImage(
-        )[12] + SENSOR_DIST_FROM_CENTER  #-80 slight error propagated 0.8 degreetoo off
+        )[12] + SENSOR_DIST_FROM_CENTER  # -80 slight error propagated 0.8 degreetoo off
 
-        #Tof4
+        # Tof4
         data[475] = self.tof_sensors['tof4'].getRangeImage(
-        )[0] + SENSOR_DIST_FROM_CENTER  #-55
+        )[0] + SENSOR_DIST_FROM_CENTER  # -55
         data[483] = self.tof_sensors['tof4'].getRangeImage(
         )[1] + SENSOR_DIST_FROM_CENTER
         data[491] = self.tof_sensors['tof4'].getRangeImage(
@@ -348,11 +348,11 @@ class EPuckDriver(WebotsDifferentialDriveNode):
         data[563] = self.tof_sensors['tof4'].getRangeImage(
         )[11] + SENSOR_DIST_FROM_CENTER
         data[575] = self.tof_sensors['tof4'].getRangeImage(
-        )[12] + SENSOR_DIST_FROM_CENTER  #-35 slight error propagated 0.8 degreetoo off
+        )[12] + SENSOR_DIST_FROM_CENTER  # -35 slight error propagated 0.8 degreetoo off
 
-        #Tof5
+        # Tof5
         data[925] = self.tof_sensors['tof5'].getRangeImage(
-        )[0] + SENSOR_DIST_FROM_CENTER  # 35
+        )[0] + SENSOR_DIST_FROM_CENTER  #  35
         data[933] = self.tof_sensors['tof5'].getRangeImage(
         )[1] + SENSOR_DIST_FROM_CENTER
         data[941] = self.tof_sensors['tof5'].getRangeImage(
@@ -376,9 +376,9 @@ class EPuckDriver(WebotsDifferentialDriveNode):
         data[1013] = self.tof_sensors['tof5'].getRangeImage(
         )[11] + SENSOR_DIST_FROM_CENTER
         data[1025] = self.tof_sensors['tof5'].getRangeImage(
-        )[12] + SENSOR_DIST_FROM_CENTER  #55 slight error propagated 0.8 degreetoo off
+        )[12] + SENSOR_DIST_FROM_CENTER  # 55 slight error propagated 0.8 degreetoo off
 
-        #tof_dists = [OUT_OF_RANGE if dist > TOF_SHORT_MODE_MAX_RANGE else dist for dist in data]
+        # tof_dists = [OUT_OF_RANGE if dist > TOF_SHORT_MODE_MAX_RANGE else dist for dist in data]
 
         msg = LaserScan()
         msg.header.frame_id = (tf + 'laser_scanner').replace("/", "")
