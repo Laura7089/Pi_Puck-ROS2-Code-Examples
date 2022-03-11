@@ -13,17 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Launch Webots e-puck driver."""
 
 import os
-from launch.substitutions import LaunchConfiguration
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions.path_join_substitution import PathJoinSubstitution
-from launch.actions import IncludeLaunchDescription
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch import LaunchDescription
+
 from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
+from launch.substitutions.path_join_substitution import PathJoinSubstitution
+
 
 def generate_launch_description():
     package_dir = get_package_share_directory('webots_ros2_epuck')
@@ -31,21 +31,20 @@ def generate_launch_description():
 
     webots = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(get_package_share_directory('webots_ros2_core'), 'launch', 'robot_launch_multi.py')
-        ),
+            os.path.join(get_package_share_directory('webots_ros2_core'),
+                         'launch', 'robot_launch_multi.py')),
         launch_arguments=[
             ('package', 'webots_ros2_epuck'),
             ('executable', 'driver'),
             ('namespace', 'epuck'),
             ('world', PathJoinSubstitution([package_dir, 'worlds', world])),
-        ]
-    )
+        ])
 
     return LaunchDescription([
         DeclareLaunchArgument(
             'world',
             default_value='new_maze.wbt',
-            description='Choose one of the world files from `/webots_ros2_epuck/world` directory'
-        ),
-        webots
+            description=
+            'Choose one of the world files from `/webots_ros2_epuck/world` directory'
+        ), webots
     ])
