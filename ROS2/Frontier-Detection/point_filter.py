@@ -2,8 +2,8 @@
 # self.get_logger().info('This is z' + str(z) + 'Length of centroids' + str(len(centroids)))
 # self.get_logger().info('This is z' + str(xx))
 
-import time
-from array import *
+# import time
+# from array import *
 from copy import copy
 
 # --------Modules and Libraries--------#
@@ -22,7 +22,7 @@ from visualization_msgs.msg import Marker
 
 
 class Filter(Node):
-
+    """"""
     def __init__(self):
         super().__init__('f')
 

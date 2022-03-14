@@ -1,8 +1,9 @@
-#  Author: Lucas Williamson
-#  Date: April 11th 2021
-#  ROS Version: ROS 2 Foxy Fitzroy
+"""
+Author: Lucas Williamson
+Date: April 11th 2021
+ROS Version: ROS 2 Foxy Fitzroy
+"""
 
-#  import the math module
 # # # # # # # # # # # # # #  IMPORT LIBRARIES# # # # # # # # # # # # # # # # #
 #  Python math library
 import math
@@ -10,8 +11,6 @@ import re
 #  Python time library
 # import time
 from functools import partial
-#  Enables pauses in the execution of code
-# from time import sleep
 
 #  Scientific computing library
 # import numpy as np
@@ -32,6 +31,9 @@ from sensor_msgs.msg import LaserScan
 #  Enables the use of the string message type
 from std_msgs.msg import Float64MultiArray, String
 
+#  Enables pauses in the execution of code
+# from time import sleep
+
 # from nav_msgs.msg import Odometry
 
 
@@ -39,7 +41,6 @@ class MapExplore(Node):
     """
     MapExplore
     """
-
     def __init__(self):
         super().__init__('me')
         name = "/epuck"
@@ -66,7 +67,7 @@ class MapExplore(Node):
         # Checks 5 pixels either side of it for a match
         self.error_margin = 5
 
-        self.map_subscriber = self.create_subscription(OccupancyGrid, '/map', self.truth_map_callback, qos_profile=qos_profile_action_status_default)
+        self.map_subscriber = self.create_subscription(OccupancyGrid, '/map', self.truth_map_callback, qos_profile = qos_profile_action_status_default)
         self.map_subscriber = self.create_subscription(OccupancyGrid, '/map_merge/map', self.merge_map_callback, 10)
 
         # This is for individual robot stats
@@ -74,7 +75,7 @@ class MapExplore(Node):
             self.number = number
             odom_name = name + str(number) + '/odom'
             self.odom_subscriber = self.create_subscription(Odometry, odom_name, partial(self.odom_callback, odom_name), 10)
-    
+
         self.total_distance = 0.0
         self.left_dist = 0.0
         self.previous_x = [0.0] * self.num_robots
@@ -85,7 +86,7 @@ class MapExplore(Node):
         """
         merge_map_callback
         """
-        
+
         width = msg.info.width
         height = msg.info.height
         size = len(msg.data)
@@ -100,39 +101,31 @@ class MapExplore(Node):
 
         for i in range(int(size)):
             number = msg.data[i]
-            if (i > 4 and i < (len(self.truth_map.data) - 3)):
+            if 4 < i < (len(self.truth_map.data) - 3):
                 ground_truth = [0] * self.error_margin
                 for margin in range(self.error_margin):
-                    ground_truth[margin] = self.truth_map.data[(i - 2 +
-                                                                margin)]
-            if (number == -1):
+                    ground_truth[margin] = self.truth_map.data[(i - 2 + margin)]
+            if number == -1:
                 num_instances_of_negatives += 1
-            elif (number == 0):
+            elif number == 0:
                 num_instances_of_zeros += 1
-                if (number == ground_truth[0] or number == ground_truth[1]
-                        or number == ground_truth[2]
-                        or number == ground_truth[3]
-                        or number == ground_truth[4]):
+                #  if number == ground_truth[0] or number == ground_truth[1] or number == ground_truth[2] or number == ground_truth[3] or number == ground_truth[4]:
+                if number in (ground_truth[:4]):
                     matches = matches + 1
-            elif (number == 100):
+            elif number == 100:
                 num_instances_of_positives += 1
-                if (number == ground_truth[0] or number == ground_truth[1]
-                        or number == ground_truth[2]
-                        or number == ground_truth[3]
-                        or number == ground_truth[4]):
+                #  if number == ground_truth[0] or number == ground_truth[1] or number == ground_truth[2] or number == ground_truth[3] or number == ground_truth[4]:
+                if number in (ground_truth[:4]):
                     matches = matches + 1
             else:
                 other += 1
 
     # ratio lets make it a percentage
-        map_completion = (
-            (num_instances_of_zeros + num_instances_of_positives) /
-            (self.truth_map_filled_num + self.truth_map_free_num)) * 100
+        map_completion = ((num_instances_of_zeros + num_instances_of_positives) / (self.truth_map_filled_num + self.truth_map_free_num)) * 100
         self.map_completion_file.write(str(map_completion) + " ")
 
         # ratio lets make it a percentage
-        map_quality = matches / (self.truth_map_filled_num +
-                                 self.truth_map_free_num) * 100
+        map_quality = matches / (self.truth_map_filled_num + self.truth_map_free_num) * 100
         self.map_quality_file.write(str(map_quality) + " ")
 
     def truth_map_callback(self, msg):
@@ -151,11 +144,11 @@ class MapExplore(Node):
         other = 0
         for i in range(int(size)):
             number = msg.data[i]
-            if (number == -1):
+            if number == -1:
                 num_instances_of_negatives += 1
-            elif (number == 0):
+            elif number == 0:
                 num_instances_of_zeros += 1
-            elif (number == 100):
+            elif number == 100:
                 num_instances_of_positives += 1
             else:
                 other += 1
@@ -175,10 +168,7 @@ class MapExplore(Node):
         x = msg.pose.pose.position.x
         y = msg.pose.pose.position.y
 
-        d_increment = math.sqrt((x - self.previous_x[number[0]]) *
-                                (x - self.previous_x[number[0]]) +
-                                (y - self.previous_y[number[0]]) *
-                                (y - self.previous_y[number[0]]))
+        d_increment = math.sqrt((x - self.previous_x[number[0]]) * (x - self.previous_x[number[0]]) + (y - self.previous_y[number[0]]) * (y - self.previous_y[number[0]]))
 
         self.total_distance = self.total_distance + d_increment
         # self.pub.publish(data)
@@ -196,14 +186,14 @@ class MapExplore(Node):
     # self.get_logger().info("\n Maths: " + str( x - self.previous_x))
 
 
-def main(args=None):
+def main(args = None):
     """main"""
-    
-    rclpy.init(args=args)
-    me = MapExplore()
-    rclpy.spin(me)
 
-    me.destroy_node()
+    rclpy.init(args = args)
+    map_expl = MapExplore()
+    rclpy.spin(map_expl)
+
+    map_expl.destroy_node()
     rclpy.shutdown()
 
 
