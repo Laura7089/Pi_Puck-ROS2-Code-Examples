@@ -8,13 +8,13 @@
 import math
 import re
 #  Python time library
-import time
+# import time
 from functools import partial
 #  Enables pauses in the execution of code
-from time import sleep
+# from time import sleep
 
 #  Scientific computing library
-import numpy as np
+# import numpy as np
 #  ROS client library for Python
 import rclpy
 #  Handle Pose messages
@@ -36,6 +36,9 @@ from std_msgs.msg import Float64MultiArray, String
 
 
 class MapExplore(Node):
+    """
+    MapExplore
+    """
 
     def __init__(self):
         super().__init__('me')
@@ -63,30 +66,15 @@ class MapExplore(Node):
         # Checks 5 pixels either side of it for a match
         self.error_margin = 5
 
-        self.map_subscriber = self.create_subscription(
-            OccupancyGrid,
-            '/map',
-            self.truth_map_callback,
-            qos_profile=qos_profile_action_status_default,
-        )
-        self.map_subscriber = self.create_subscription(
-            OccupancyGrid,
-            '/map_merge/map',
-            self.merge_map_callback,
-            10,
-        )
+        self.map_subscriber = self.create_subscription(OccupancyGrid, '/map', self.truth_map_callback, qos_profile=qos_profile_action_status_default)
+        self.map_subscriber = self.create_subscription(OccupancyGrid, '/map_merge/map', self.merge_map_callback, 10)
 
-        # This is for indivisual robot stats
+        # This is for individual robot stats
         for number in range(self.num_robots):
             self.number = number
             odom_name = name + str(number) + '/odom'
-            self.odom_subscriber = self.create_subscription(
-                Odometry,
-                odom_name,
-                partial(self.odom_callback, odom_name),
-                10,
-            )
-
+            self.odom_subscriber = self.create_subscription(Odometry, odom_name, partial(self.odom_callback, odom_name), 10)
+    
         self.total_distance = 0.0
         self.left_dist = 0.0
         self.previous_x = [0.0] * self.num_robots
@@ -94,6 +82,10 @@ class MapExplore(Node):
         self.first_run = [True] * self.num_robots
 
     def merge_map_callback(self, msg):
+        """
+        merge_map_callback
+        """
+        
         width = msg.info.width
         height = msg.info.height
         size = len(msg.data)
@@ -144,6 +136,9 @@ class MapExplore(Node):
         self.map_quality_file.write(str(map_quality) + " ")
 
     def truth_map_callback(self, msg):
+        """
+        truth_map_callback
+        """
         self.truth_map = msg
 
         width = msg.info.width
@@ -168,9 +163,12 @@ class MapExplore(Node):
         self.truth_map_free_num = num_instances_of_zeros + 20
 
     def odom_callback(self, name, msg):
+        """
+        odom_callback
+        """
         number = [int(s) for s in re.findall(r'-?\d+\.?\d*', name)]
         # self.get_logger().info(str(number) + name)
-        if (self.first_run[number[0]]):
+        if self.first_run[number[0]]:
             self.previous_x[number[0]] = msg.pose.pose.position.x
             self.previous_y[number[0]] = msg.pose.pose.position.y
 
@@ -199,6 +197,8 @@ class MapExplore(Node):
 
 
 def main(args=None):
+    """main"""
+    
     rclpy.init(args=args)
     me = MapExplore()
     rclpy.spin(me)
