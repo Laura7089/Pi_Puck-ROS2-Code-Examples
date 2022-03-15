@@ -1,3 +1,7 @@
+"""
+Author: Lucas?
+Date: 2021-??-??
+"""
 # self.get_logger().info(str(cond))
 # self.get_logger().info('This is z' + str(z) + 'Length of centroids' + str(len(centroids)))
 # self.get_logger().info('This is z' + str(xx))
@@ -22,7 +26,9 @@ from visualization_msgs.msg import Marker
 
 
 class Filter(Node):
-    """"""
+    """
+    Filter
+    """
     def __init__(self):
         super().__init__('f')
 
@@ -40,8 +46,7 @@ class Filter(Node):
             10,
         )
         # This is deprecated, use rclpy.get()... to find the time
-        self.clock_sub = self.create_subscription(Clock, '/clock',
-                                                  self.time_callback, 10)
+        self.clock_sub = self.create_subscription(Clock, '/clock', self.time_callback, 10)
 
         self.declare_parameter('goal_topic', '/epuck0/filtered_goals')
 
@@ -50,8 +55,7 @@ class Filter(Node):
         self.f_pub = self.create_publisher(Marker, '/frontiers', 10)
         self.c_pub = self.create_publisher(Marker, '/centroid', 10)
         # self.publish_goal_values = self.create_publisher(PointStamped, '/goal', 10)
-        self.filter_pub = self.create_publisher(PointArray, param_goal.value,
-                                                10)
+        self.filter_pub = self.create_publisher(PointArray, param_goal.value, 10)
 
         self.goals = PointStamped()
         self.mapData = OccupancyGrid()
@@ -65,20 +69,26 @@ class Filter(Node):
         self.info_radius = 1.0
 
     def map_callback(self, msg):
+        """
+        map_callback
+        """
         self.mapData = msg
 
     # for i in range(len(msg.data)):
     # self.get_logger().info(str(i) + ' ' + 'Map data: ' + str(msg.data[i]))
 
     def time_callback(self, msg):
+        """
+        time_callback
+        """
         self.time = msg.clock
 
     def filter_callback(self, msg):
-        '''
-        This filters the points based on closeness to each other and 
+        """
+        This filters the points based on closeness to each other and
         euclidean distance to the actual robot.
         This will also get rids of redendant points other time as well
-        '''
+        """
         # self.get_logger().info(str(self.mapData))
 
         # Wait until a map is called
@@ -120,7 +130,7 @@ class Filter(Node):
         elif len(front) > 1:
             # Radius(bandwidth) applied to every datapointry
             # This works
-            ms = MeanShift(bandwidth=0.3)
+            ms = MeanShift(bandwidth = 0.3)
             ms.fit(front)
             centroids = ms.cluster_centers_  #  centroids array is the centers of each cluster
 
@@ -141,10 +151,8 @@ class Filter(Node):
             xx = array([tempStampedPoint.point.x, tempStampedPoint.point.y])
             # Values get here
             cond = (gridValue(self.mapData, xx) > self.threshold) or cond
-            if (cond or (informationGain(self.mapData,
-                                         [centroids[z][0], centroids[z][1]],
-                                         self.info_radius * 0.5)) < 0.2):
-                centroids = delete(centroids, (z), axis=0)
+            if (cond or (informationGain(self.mapData, [centroids[z][0], centroids[z][1]], self.info_radius * 0.5)) < 0.2):
+                centroids = delete(centroids, (z), axis = 0)
                 z = z - 1
 
             z += 1
@@ -165,8 +173,8 @@ class Filter(Node):
         self.filter_pub.publish(pointArray)
 
 
-def main(args=None):
-    rclpy.init(args=args)
+def main(args = None):
+    rclpy.init(args = args)
     f = Filter()
     rclpy.spin(f)
 
