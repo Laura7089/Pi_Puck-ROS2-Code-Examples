@@ -167,7 +167,7 @@ Solid {
       ]
     }
 
-E-puck_enu {
+E-puck {
   name "epuck0"
   translation -0.91 0 0
   rotation -0.446 0.895 0.0 0.0
